@@ -16,5 +16,4 @@ SELECT
     END AS Churned
 FROM ecommerce_data
 GROUP BY User_Name;
-
 SELECT * FROM ai_churn_features;
