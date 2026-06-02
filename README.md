@@ -1,18 +1,20 @@
-# End-to-End-Customer-Churn-Prediction-Engine-using-XGBoost-SHAP
+# End-to-End Customer Churn Prediction Engine
 
-An enterprise-grade, data-driven machine learning pipeline that identifies high-risk e-commerce customers. The system processes chaotic transactional histories, aggregates behavioral consumer data via relational queries, constructs a predictive gradient-boosted tree framework, and interprets user risks utilizing modern Explainable AI.
+An enterprise-grade, data-driven machine learning pipeline that identifies high-risk e-commerce customers. The system processes transactional histories, aggregates behavioral consumer data via relational time-bounded queries to eliminate data leakage, constructs an optimized gradient-boosted tree framework with cross-validation tuning, and interprets user risks utilizing modern Explainable AI.
+
+---
 
 ## 📊 Pipeline Architecture Overview
 The project is built around an end-to-end operational data loop spanning three core operational layers:
-1. **Data Engineering Layer (MySQL):** Ingests over 50,000 raw transactional invoice logs and performs RFM (Recency, Frequency, Monetary) matrix aggregations.
-2. **Predictive Analytics Layer (XGBoost):** Classifies complex, non-linear consumer behaviors to isolate retention threats.
-3. **Algorithmic Transparency Layer (SHAP):** Leverages Explainable AI (XAI) to extract individual root-cause risk drivers for executive decision-making.
+1. **Data Engineering Layer (MySQL):** Ingests raw transactional invoice logs and performs time-split RFM (Recency, Frequency, Monetary) matrix aggregations to prevent target data leakage.
+2. **Predictive Analytics Layer (XGBoost):** Classifies complex consumer behaviors using hyperparameter-optimized estimators tuned via Stratified 5-Fold Cross-Validation.
+3. **Algorithability Transparency Layer (SHAP):** Leverages Explainable AI (XAI) to extract individual root-cause risk drivers for executive decision-making.
 
 ---
 
 ## 🛠️ Technology Stack & Dependencies
 * **Database Management:** MySQL Server & MySQL Workbench
-* **Language environment:** Python 3.12+
+* **Language Environment:** Python 3.12+
 * **Core Machine Learning Engines:** `xgboost`, `scikit-learn`
 * **Data Engineering & Explainability Frameworks:** `pandas`, `shap`, `sqlalchemy`, `pymysql`
 
@@ -21,21 +23,26 @@ The project is built around an end-to-end operational data loop spanning three c
 ## 🏗️ Step-by-Step Implementation Detail
 
 ### 1. Database Schema Ingestion & Feature Engineering
-A dataset consisting of **50,000 transaction records** was mapped into an indexed relational table schema inside MySQL Workbench. 
+A dataset consisting of 50,000 transaction records was mapped into an indexed relational table schema inside MySQL Workbench. 
 
-To convert scattered transactional invoices into centralized profiles, an optimized structural SQL script compiles individual user activities into static **RFM behavioral metrics**:
+To ensure complete statistical integrity and avoid data leakage, features are calculated within a strict historical observation window, while targets are labeled based on independent subsequent transaction windows:
+* **Recency:** Computes the total number of days elapsed since the user's most recent transaction up to the observation cutoff.
+* **Frequency:** Dynamically counts the total volume of successful invoices generated per customer account during the active window.
+* **Monetary:** Aggregates and rounds the total lifetime monetary expenditure across active transaction histories.
+* **Target Binary Mapping (Churned):** Maps a separate prediction window to mark customers inactive (1) if they generated zero subsequent transaction instances.
 
-```sql
-CREATE TABLE ai_churn_features AS
-SELECT 
-    User_Name,
-    MAX(Age) AS Age,
-    DATEDIFF('2026-06-01', MAX(Transaction_Date)) AS Recency,
-    COUNT(Transaction_ID) AS Frequency,
-    ROUND(SUM(Purchase_Amount), 2) AS Monetary,
-    CASE 
-        WHEN DATEDIFF('2026-06-01', MAX(Transaction_Date)) > 90 THEN 1 
-        ELSE 0 
-    END AS Churned
-FROM ecommerce_data
-GROUP BY User_Name;
+### 2. Predictive AI & Class Imbalance Mitigation
+The dataset is processed using Python via an **XGBoost Classifier** ensemble. Class imbalance is handled natively via dynamic positional matrix scaling (`scale_pos_weight`) to optimize penalization bounds for false negatives. 
+
+* **Hyperparameter Optimization:** Rather than relying on arbitrary parameters, the system executes an automated `GridSearchCV` tuning grid over tree depth, estimators, and learning rates to secure the highest out-of-sample F1-score.
+
+---
+
+## 📈 System Execution & Performance Results
+
+### Key Performance Indicators (KPIs)
+* **Risk Engine Framework:** Hyperparameter-Tuned XGBoost Tree Classifier
+* **Validation Rigor:** 5-Fold Cross-Validation Stratified Split
+* **Evaluation Metrics Tracked:** Confusion Matrix, Precision, Recall, F1-Score, and SHAP Additive Game-Theory Values
+
+---
